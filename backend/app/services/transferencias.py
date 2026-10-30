@@ -1,20 +1,35 @@
-def calcular_transferencias(grupo: list[dict]) -> list[dict]:
-    total = sum(participante["valor"] for participante in grupo)
-    media = total / len(grupo)
+def separar_credores_devedores(saldos: dict) -> tuple[list[dict], list[dict]]:
+    """Separa quem tem saldo positivo (credores) de quem tem saldo negativo (devedores).
 
+    Entrada: {participante_id: saldo_em_centavos}
+    Saída: duas listas de {"participante_id": id, "valor": centavos}, com valor sempre positivo.
+    Quem tem saldo 0 não entra em nenhuma das listas.
+    """
     credores = []
     devedores = []
 
-    for participante in grupo:
-        saldo = participante["valor"] - media
+    for participante_id, saldo in saldos.items():
         if saldo > 0:
-            credor = participante["participante"]
-            credores.append({"participante": credor, "valor": saldo})
-        elif saldo == 0:
-            continue
-        else:
-            devedor = participante["participante"]
-            devedores.append({"participante": devedor, "valor": abs(saldo)})
+            credores.append({"participante_id": participante_id, "valor": saldo})
+        elif saldo < 0:
+            devedores.append({"participante_id": participante_id, "valor": abs(saldo)})
+
+    return credores, devedores
+
+
+def calcular_transferencias(saldos: dict) -> list[dict]:
+    """Gera a lista de transferências que zera todos os saldos.
+
+    Algoritmo guloso: o maior devedor paga o maior credor, repetidamente,
+    até ninguém dever mais nada. Tudo em centavos inteiros.
+
+    Entrada: {participante_id: saldo_em_centavos} (positivo = tem a receber)
+    Saída: [{"devedor": id, "credor": id, "valor": centavos}, ...]
+    """
+    if sum(saldos.values()) != 0:
+        raise ValueError("A soma dos saldos deve ser zero.")
+
+    credores, devedores = separar_credores_devedores(saldos)
 
     transferencias = []
 
@@ -25,8 +40,8 @@ def calcular_transferencias(grupo: list[dict]) -> list[dict]:
         valor_transferencia = min(credor["valor"], devedor["valor"])
 
         transferencias.append({
-            "devedor": devedor["participante"],
-            "credor": credor["participante"],
+            "devedor": devedor["participante_id"],
+            "credor": credor["participante_id"],
             "valor": valor_transferencia
         })
 

@@ -24,7 +24,7 @@ def dividir_igualmente(total_centavos: int, participantes: list[dict]) -> list[d
 
     for i, participante in enumerate(participantes):
         despesas_divididas.append({
-            "participante": participante["participante"],
+            "participante_id": participante["id"],
             "valor": valor_por_participante + (1 if i < resto else 0)
         })
     return despesas_divididas
